@@ -7,7 +7,8 @@ var cors = require("cors");
 
 var indexRouter = require("./routes/index");
 var usersRouter = require("./routes/users");
-var authRouter = require("./routes/auth"); // 새로 추가된 라우트
+var authRouter = require("./routes/auth");
+var chatRouter = require("./routes/chat");
 
 var app = express();
 
@@ -26,7 +27,8 @@ app.use(express.static(path.join(__dirname, "public")));
 
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
-app.use("/auth", authRouter); // 새로운 인증 라우트 추가
+app.use("/auth", authRouter);
+app.use("/chat", chatRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
