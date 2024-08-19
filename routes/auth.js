@@ -7,6 +7,7 @@ const createError = require("http-errors");
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 router.post("/login", async (req, res, next) => {
+    console.log("req.body", req.body);
     const token = req.body.token;
 
     try {
