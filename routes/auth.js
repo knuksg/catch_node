@@ -5,6 +5,7 @@ const db = require("../config/db");
 // 로그인 시 유저 정보 확인 및 등록 로직
 router.post("/login", async function (req, res, next) {
     const { uid, email } = req.body;
+    console.log("uid: " + uid + ", email: " + email);
 
     if (!uid || !email) {
         return res.status(400).json({ error: "UID와 이메일을 모두 제공해야 합니다." });
@@ -13,6 +14,7 @@ router.post("/login", async function (req, res, next) {
     try {
         // 1. 유저가 데이터베이스에 존재하는지 확인
         const user = await db.query("SELECT * FROM users WHERE uid = ?", [uid]);
+        console.log("user: " + user);
 
         if (user.length > 0) {
             // 유저가 이미 존재하는 경우
