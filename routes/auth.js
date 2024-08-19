@@ -1,47 +1,31 @@
-const express = require("express");
-const router = express.Router();
-const { OAuth2Client } = require("google-auth-library");
-const db = require("../services/db");
-const createError = require("http-errors");
+var express = require("express");
+var router = express.Router();
+const db = require("../config/db");
 
-const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+// 로그인 시 유저 정보 확인 및 등록 로직
+router.post("/login", async function (req, res, next) {
+    const { uid, email } = req.body;
 
-router.post("/login", async (req, res, next) => {
-    console.log("req.body", req.body);
-    const token = req.body.token;
+    if (!uid || !email) {
+        return res.status(400).json({ error: "UID와 이메일을 모두 제공해야 합니다." });
+    }
 
     try {
-        const ticket = await client.verifyIdToken({
-            idToken: token,
-            audience: process.env.GOOGLE_CLIENT_ID,
-        });
-        const payload = ticket.getPayload();
-        const googleId = payload["sub"];
-        const email = payload["email"];
-        const name = payload["name"];
+        // 1. 유저가 데이터베이스에 존재하는지 확인
+        const user = await db.query("SELECT * FROM users WHERE uid = ?", [uid]);
 
-        // 1. 사용자 존재 여부 확인
-        const existingUser = await db.query("SELECT * FROM users WHERE google_id = ?", [googleId]);
-
-        if (existingUser.length > 0) {
-            // 2. 사용자 정보 업데이트가 필요한지 확인
-            const user = existingUser[0];
-            if (user.email !== email || user.name !== name) {
-                await db.query("UPDATE users SET email = ?, name = ? WHERE google_id = ?", [email, name, googleId]);
-                user.email = email;
-                user.name = name;
-            }
-            // 사용자 정보 반환
-            res.status(200).json({ message: "Login successful", user });
+        if (user.length > 0) {
+            // 유저가 이미 존재하는 경우
+            return res.status(200).json({ message: "유저가 이미 존재합니다.", user: user[0] });
         } else {
-            // 3. 신규 사용자 등록
-            await db.query("INSERT INTO users (google_id, email, name) VALUES (?, ?, ?)", [googleId, email, name]);
-            const newUser = { google_id: googleId, email, name };
-            res.status(200).json({ message: "User created and login successful", user: newUser });
+            // 2. 유저가 존재하지 않으면 등록
+            await db.query("INSERT INTO users (uid, email) VALUES (?, ?)", [uid, email]);
+            const newUser = await db.query("SELECT * FROM users WHERE uid = ?", [uid]);
+            return res.status(201).json({ message: "새 유저가 등록되었습니다.", user: newUser[0] });
         }
-    } catch (error) {
-        console.error("Error verifying token or accessing database:", error);
-        next(createError(400, "Invalid token or database error"));
+    } catch (err) {
+        console.error("데이터베이스 에러:", err);
+        return res.status(500).json({ error: "서버 에러가 발생했습니다." });
     }
 });
 
