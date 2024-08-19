@@ -25,21 +25,21 @@ const sendMessage = async (req, res) => {
 
         const response = await openAIClient.sendMessage(message);
 
-        // 파일에 메시지와 응답 저장
-        const logFileName = `chat_${threadId || openAIClient.getThreadId()}.txt`;
-        const logFilePath = path.join(__dirname, "logs", logFileName);
+        // // 파일에 메시지와 응답 저장
+        // const logFileName = `chat_${threadId || openAIClient.getThreadId()}.txt`;
+        // const logFilePath = path.join(__dirname, "logs", logFileName);
 
-        const logMessage = `User: ${message}\nChatGPT: ${
-            typeof response === "object" ? response.response : response
-        }\n\n`;
+        // const logMessage = `User: ${message}\nChatGPT: ${
+        //     typeof response === "object" ? response.response : response
+        // }\n\n`;
 
-        // 디렉터리 확인 후 없으면 생성
-        if (!fs.existsSync(path.dirname(logFilePath))) {
-            fs.mkdirSync(path.dirname(logFilePath), { recursive: true });
-        }
+        // // 디렉터리 확인 후 없으면 생성
+        // if (!fs.existsSync(path.dirname(logFilePath))) {
+        //     fs.mkdirSync(path.dirname(logFilePath), { recursive: true });
+        // }
 
-        // 메시지와 응답을 파일에 추가
-        fs.appendFileSync(logFilePath, logMessage);
+        // // 메시지와 응답을 파일에 추가
+        // fs.appendFileSync(logFilePath, logMessage);
 
         if (typeof response === "object") {
             res.json({
