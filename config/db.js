@@ -17,7 +17,7 @@ async function query(sql, params) {
     } catch (err) {
         throw err;
     } finally {
-        if (conn) conn.release(); // release to pool
+        if (conn) conn.end(); // 연결을 안전하게 종료합니다.
     }
 }
 
